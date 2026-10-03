@@ -1,6 +1,10 @@
 module escrow_app::escrow;
 
+use sui::coin::Coin;
+use sui::sui::SUI;
+
 const ENotSeller: u64 = 0;
+const EWrongPrice: u64 = 1;
 
 public struct Escrow<T: key + store> has key {
     id: UID,
@@ -21,7 +25,7 @@ public fun create_escrow<T: key + store>(item: T, price: u64, ctx: &mut TxContex
     transfer::share_object(escrow);
 }
 
-
+/*Cancels the created Escrow*/
 public fun cancel_escrow<T: key + store>(escrow: Escrow<T>, ctx: &mut TxContext){
     assert!(ctx.sender() == escrow.seller, ENotSeller);
     let Escrow {id, item, price:_, seller} = escrow;
@@ -29,3 +33,11 @@ public fun cancel_escrow<T: key + store>(escrow: Escrow<T>, ctx: &mut TxContext)
     transfer::public_transfer(item, seller);
 }
 
+/*Buyer pays the price by giving a Coin object with the exact SUI the seller demanded and gives*/
+public fun buy<T: key + store>(escrow: Escrow<T>, payment: Coin<SUI>, ctx: &mut TxContext){
+    let Escrow {id, item, price, seller} = escrow;
+    assert!(payment.value() == price, EWrongPrice);
+    id.delete();
+    transfer::public_transfer(payment, seller);
+    transfer::public_transfer(item, ctx.sender());
+}
