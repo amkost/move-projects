@@ -9,6 +9,7 @@ public struct Escrow<T: key + store> has key {
     seller: address,
 }
 
+/*Creates an escrow object that takes inside a generic object T which must have key and store abilities */
 public fun create_escrow<T: key + store>(item: T, price: u64, ctx: &mut TxContext){
     let escrow = Escrow {
         id: object::new(ctx),
@@ -19,6 +20,7 @@ public fun create_escrow<T: key + store>(item: T, price: u64, ctx: &mut TxContex
 
     transfer::share_object(escrow);
 }
+
 
 public fun cancel_escrow<T: key + store>(escrow: Escrow<T>, ctx: &mut TxContext){
     assert!(ctx.sender() == escrow.seller, ENotSeller);
