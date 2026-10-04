@@ -1,5 +1,7 @@
 import { ConnectButton } from "@mysten/dapp-kit-react/ui";
 import { WalletStatus } from "./WalletStatus";
+import { CreateTestItem } from './CreateTestItem';
+import { ListItem } from './ListItem';
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
 
       <main className="container mx-auto px-4 py-8">
         <WalletStatus />
+        <ListItem />
+        <CreateTestItem />
       </main>
     </div>
   );
