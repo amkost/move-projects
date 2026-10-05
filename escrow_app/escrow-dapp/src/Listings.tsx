@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useCurrentClient, useDAppKit } from '@mysten/dapp-kit-react';
+import { useCurrentAccount, useCurrentClient, useDAppKit } from '@mysten/dapp-kit-react'; 
 import { Transaction, coinWithBalance } from '@mysten/sui/transactions';
+import { normalizeSuiAddress } from '@mysten/sui/utils';
 
 const PACKAGE_ID = '0x1f3463afc8e6b2e183aaee01c9628027bb15389d71bd8710127538029bb38e6c';
 
-type Listing = { escrowId: string; price: string; itemType: string };
+type Listing = { escrowId: string; price: string; seller: string; itemType: string };
 
 export function Listings() {
 	const client = useCurrentClient();
 	const dAppKit = useDAppKit();
+	const account = useCurrentAccount();
 	const [listings, setListings] = useState<Listing[]>([]);
 	const [message, setMessage] = useState('');
 
@@ -20,8 +22,8 @@ export function Listings() {
 		});
 
 		const created = page.events.map((event) => {
-			const json = event.json as { escrow_id: string; price: string };
-			return { escrowId: json.escrow_id, price: json.price };
+			const json = event.json as { escrow_id: string; price: string; seller: string };
+			return { escrowId: json.escrow_id, price: json.price, seller: json.seller };
 		});
 		if (created.length === 0) {
 			setListings([]);
@@ -66,6 +68,27 @@ export function Listings() {
 		}
 	}
 
+
+	async function cancel(l: Listing) {
+		try {
+			const tx = new Transaction();
+			tx.moveCall({
+				target: `${PACKAGE_ID}::escrow::cancel_escrow`,
+				typeArguments: [l.itemType],
+				arguments: [tx.object(l.escrowId)],
+			});
+			const result = await dAppKit.signAndExecuteTransaction({ transaction: tx });
+			if (result.FailedTransaction) {
+				setMessage('Transaction failed');
+				return;
+			}
+			setMessage(`Cancelled! Digest: ${result.Transaction.digest}`);
+			await load();
+		} catch (e) {
+			setMessage(e instanceof Error ? e.message : String(e));
+		}
+	}
+
 	return (
 		<div>
 			<h2>Open listings</h2>
@@ -74,6 +97,9 @@ export function Listings() {
 				<p key={l.escrowId}>
 					{l.escrowId} - {Number(l.price) / 1_000_000_000} SUI{' '}
 					<button onClick={() => buy(l)}>Buy</button>
+					{account && normalizeSuiAddress(account.address) === normalizeSuiAddress(l.seller) && (
+						<button onClick={() => cancel(l)}>Cancel</button>
+					)}
 				</p>
 			))}
 			{message && <p>{message}</p>}
