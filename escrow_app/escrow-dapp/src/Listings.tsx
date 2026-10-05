@@ -1,37 +1,70 @@
 import { useEffect, useState } from 'react';
-import { useCurrentClient } from '@mysten/dapp-kit-react';
+import { useCurrentClient, useDAppKit } from '@mysten/dapp-kit-react';
+import { Transaction, coinWithBalance } from '@mysten/sui/transactions';
 
 const PACKAGE_ID = '0x1f3463afc8e6b2e183aaee01c9628027bb15389d71bd8710127538029bb38e6c';
 
-type Listing = { escrowId: string; price: string };
+type Listing = { escrowId: string; price: string; itemType: string };
 
 export function Listings() {
 	const client = useCurrentClient();
+	const dAppKit = useDAppKit();
 	const [listings, setListings] = useState<Listing[]>([]);
+	const [message, setMessage] = useState('');
+
+	async function load() {
+		const page = await client.listEvents({
+			filter: { eventType: `${PACKAGE_ID}::escrow::EscrowCreated` },
+			order: 'descending',
+			limit: 50,
+		});
+
+		const created = page.events.map((event) => {
+			const json = event.json as { escrow_id: string; price: string };
+			return { escrowId: json.escrow_id, price: json.price };
+		});
+		if (created.length === 0) {
+			setListings([]);
+			return;
+		}
+
+		const { objects } = await client.getObjects({
+			objectIds: created.map((l) => l.escrowId),
+		});
+
+		const open: Listing[] = [];
+		for (let i = 0; i < created.length; i++) {
+			const obj = objects[i];
+			if (obj instanceof Error) continue;
+			const itemType = obj.type.slice(obj.type.indexOf('<') + 1, obj.type.lastIndexOf('>'));
+			open.push({ ...created[i], itemType });
+		}
+		setListings(open);
+	}
 
 	useEffect(() => {
-		async function load() {
-			const page = await client.listEvents({
-				filter: { eventType: `${PACKAGE_ID}::escrow::EscrowCreated` },
-				order: 'descending',
-				limit: 50,
-			});
-			console.log(page.events);
-
-			const created = page.events.map((event) => {
-				const json = event.json as { escrow_id: string; price: string };
-				return { escrowId: json.escrow_id, price: json.price };
-			});
-			if (created.length === 0) return;
-
-			const { objects } = await client.getObjects({
-				objectIds: created.map((l) => l.escrowId),
-			});
-			const open = created.filter((_, i) => !(objects[i] instanceof Error));
-			setListings(open);
-		}
 		load();
 	}, [client]);
+
+	async function buy(l: Listing) {
+		try {
+			const tx = new Transaction();
+			tx.moveCall({
+				target: `${PACKAGE_ID}::escrow::buy`,
+				typeArguments: [l.itemType],
+				arguments: [tx.object(l.escrowId), coinWithBalance({ balance: BigInt(l.price) })],
+			});
+			const result = await dAppKit.signAndExecuteTransaction({ transaction: tx });
+			if (result.FailedTransaction) {
+				setMessage('Transaction failed');
+				return;
+			}
+			setMessage(`Bought! Digest: ${result.Transaction.digest}`);
+			await load();
+		} catch (e) {
+			setMessage(e instanceof Error ? e.message : String(e));
+		}
+	}
 
 	return (
 		<div>
@@ -39,9 +72,11 @@ export function Listings() {
 			{listings.length === 0 && <p>No open listings</p>}
 			{listings.map((l) => (
 				<p key={l.escrowId}>
-					{l.escrowId} - {Number(l.price) / 1_000_000_000} SUI
+					{l.escrowId} - {Number(l.price) / 1_000_000_000} SUI{' '}
+					<button onClick={() => buy(l)}>Buy</button>
 				</p>
 			))}
+			{message && <p>{message}</p>}
 		</div>
 	);
 }
