@@ -43,7 +43,7 @@ public fun cancel_escrow<T: key + store>(escrow: Escrow<T>, ctx: &TxContext) {
     transfer::public_transfer(item, seller);
 }
 
-/*Buyer pays the price by giving a Coin object with the exact SUI the seller demanded and gives*/
+/*Buyer pays the price by giving a Coin object with the exact SUI the seller demanded and gets the object inside the escrow*/
 public fun buy<T: key + store>(escrow: Escrow<T>, payment: Coin<SUI>, ctx: &TxContext) {
     let Escrow { id, item, price, seller } = escrow;
     assert!(payment.value() == price, EWrongPrice);

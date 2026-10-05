@@ -7,8 +7,8 @@ const PACKAGE_ID = '0x1f3463afc8e6b2e183aaee01c9628027bb15389d71bd8710127538029b
 export function ListItem() {
 	const dAppKit = useDAppKit();
 	const client = useCurrentClient();
-	const [itemId, setItemId] = useState(''); // what you type in the first box
-	const [price, setPrice] = useState(''); // what you type in the second box (in SUI)
+	const [itemId, setItemId] = useState('');
+	const [price, setPrice] = useState('');
 
 	async function listForSale() {
 		const { object } = await client.getObject({ objectId: itemId.trim() });

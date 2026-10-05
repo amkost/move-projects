@@ -2,6 +2,7 @@ import { ConnectButton } from "@mysten/dapp-kit-react/ui";
 import { WalletStatus } from "./WalletStatus";
 import { CreateTestItem } from './CreateTestItem';
 import { ListItem } from './ListItem';
+import { Listings } from './Listings';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <WalletStatus />
         <ListItem />
         <CreateTestItem />
+        <Listings />
       </main>
     </div>
   );
