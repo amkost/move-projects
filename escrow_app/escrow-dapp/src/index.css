@@ -37,3 +37,63 @@ body {
     ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
 }
+
+.listing {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	margin: 8px 0;
+	border: 1px solid #ccc;
+	border-radius: 8px;
+}
+.item-id {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: monospace;
+}
+.price {
+	font-weight: bold;
+}
+.btn {
+	padding: 6px 14px;
+	border: none;
+	border-radius: 6px;
+	background: #4f46e5;
+	color: white;
+	cursor: pointer;
+}
+.btn:hover {
+	opacity: 0.85;
+}
+.btn-cancel {
+	background: #dc2626;
+}
+
+.list-form {
+	display: flex;
+	gap: 8px;
+	margin: 12px 0;
+}
+.input {
+	padding: 6px 10px;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+}
+
+.input-wide {
+	width: 70ch;
+	font-family: monospace;
+}
+
+.btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.section {
+	margin: 32px 0;
+}

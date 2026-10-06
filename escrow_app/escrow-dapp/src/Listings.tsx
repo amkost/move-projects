@@ -92,18 +92,19 @@ export function Listings() {
 	}
 
 	return (
-		<div>
+		<div className="section">
 			<h2>Open listings</h2>
 			{listings.length === 0 && <p>No open listings</p>}
 			{listings.map((l) => (
-				<p key={l.escrowId}>
-					{l.itemId} - {Number(l.price) / 1_000_000_000} SUI{' '}
-					<button onClick={() => buy(l)}>Buy</button>
-					{account && normalizeSuiAddress(account.address) === normalizeSuiAddress(l.seller) && (
-						<button onClick={() => cancel(l)}>Cancel</button>
-					)}
-				</p>
-			))}
+                <div className="listing" key={l.escrowId}>
+                    <span className="item-id">{l.itemId}</span>
+                    <span className="price">{Number(l.price) / 1_000_000_000} SUI</span>
+                    <button className="btn" onClick={() => buy(l)}>Buy</button>
+                    {account && normalizeSuiAddress(account.address) === normalizeSuiAddress(l.seller) && (
+                        <button className="btn btn-cancel" onClick={() => cancel(l)}>Cancel</button>
+                    )}
+                </div>
+            ))}
 			{message && <p>{message}</p>}
 		</div>
 	);

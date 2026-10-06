@@ -25,10 +25,10 @@ export function CreateTestItem() {
 	}
 
 	return (
-		<div>
-			<button onClick={createTestItem} disabled={!account}>
-				Create test item
-			</button>
+		<div className="section">
+            <button className="btn" onClick={createTestItem} disabled={!account}>
+                Create test item
+            </button>
 			{message && <p>{message}</p>}
 		</div>
 	);

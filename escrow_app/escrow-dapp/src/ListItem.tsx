@@ -22,14 +22,18 @@ export function ListItem() {
 		await dAppKit.signAndExecuteTransaction({ transaction: tx });
 	}
 
-	return (
-		<div>
+    return (
+	<div className="section">
+		<h2>List an item for sale</h2>
+		<div className="list-form">
 			<input
+				className="input input-wide"
 				placeholder="Object ID (0x...)"
 				value={itemId}
 				onChange={(e) => setItemId(e.target.value)}
 			/>
 			<input
+				className="input"
 				type="number"
 				step="any"
 				min="0"
@@ -37,10 +41,11 @@ export function ListItem() {
 				value={price}
 				onChange={(e) => setPrice(e.target.value)}
 			/>
-			<button onClick={listForSale} disabled={!itemId || !price}>
+			<button className="btn" onClick={listForSale} disabled={!itemId || !price}>
 				List for sale
 			</button>
 		</div>
-	);
+	</div>
+);
 }
 
