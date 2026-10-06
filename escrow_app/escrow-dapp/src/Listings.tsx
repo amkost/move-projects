@@ -5,7 +5,7 @@ import { normalizeSuiAddress } from '@mysten/sui/utils';
 
 const PACKAGE_ID = '0x1f3463afc8e6b2e183aaee01c9628027bb15389d71bd8710127538029bb38e6c';
 
-type Listing = { escrowId: string; price: string; seller: string; itemType: string };
+type Listing = { escrowId: string; itemId: string; price: string; seller: string; itemType: string };
 
 export function Listings() {
 	const client = useCurrentClient();
@@ -32,6 +32,7 @@ export function Listings() {
 
 		const { objects } = await client.getObjects({
 			objectIds: created.map((l) => l.escrowId),
+			include: { json: true }, 
 		});
 
 		const open: Listing[] = [];
@@ -39,7 +40,8 @@ export function Listings() {
 			const obj = objects[i];
 			if (obj instanceof Error) continue;
 			const itemType = obj.type.slice(obj.type.indexOf('<') + 1, obj.type.lastIndexOf('>'));
-			open.push({ ...created[i], itemType });
+			const fields = obj.json as { item: { id: string } };
+			open.push({ ...created[i], itemId: fields.item.id, itemType });
 		}
 		setListings(open);
 	}
@@ -95,7 +97,7 @@ export function Listings() {
 			{listings.length === 0 && <p>No open listings</p>}
 			{listings.map((l) => (
 				<p key={l.escrowId}>
-					{l.escrowId} - {Number(l.price) / 1_000_000_000} SUI{' '}
+					{l.itemId} - {Number(l.price) / 1_000_000_000} SUI{' '}
 					<button onClick={() => buy(l)}>Buy</button>
 					{account && normalizeSuiAddress(account.address) === normalizeSuiAddress(l.seller) && (
 						<button onClick={() => cancel(l)}>Cancel</button>
